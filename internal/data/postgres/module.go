@@ -90,15 +90,54 @@ func (s PostgresStore) UpdateAccount(id int, acc *data.Account) error {
 
 }
 func (s PostgresStore) GetAccountByID(ID int) (*data.Account, error) {
-	query := `select (id,first_name, last_name, number, balance, created_at) from account where id=$1`
+	query := `select * from account where id=$1`
 
-	var acc data.Account
+	rows, err := s.db.Query(query, ID)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := s.fromRowsToAccount(rows)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
 
-	err := s.db.QueryRow(query, ID).Scan(acc.FirstName, acc.LastName, acc.Number, acc.Balance, acc.CreatedAt)
+func (s PostgresStore) GetAccount() (*[]data.Account, error) {
+
+	query := `select * from account`
+
+	resp := []data.Account{}
+
+	rows, err := s.db.Query(query)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &acc, nil
+	for rows.Next() {
+		acc, err := s.fromRowsToAccount(rows)
+		if err != nil {
+			return nil, err
+		}
+		resp = append(resp, acc)
+	}
+
+	return &resp, nil
+
+}
+
+func (s PostgresStore) fromRowsToAccount(rows *sql.Rows) (data.Account, error) {
+	var acc data.Account
+
+	err := rows.Scan(
+		&acc.ID,
+		&acc.FirstName,
+		&acc.LastName,
+		&acc.Number,
+		&acc.Number,
+		&acc.Balance,
+		&acc.CreatedAt,
+	)
+	return acc, err
 }
