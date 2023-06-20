@@ -5,5 +5,5 @@ type Storage interface {
 	DeleteAccount(int) error
 	UpdateAccount(int, *Account) error
 	GetAccountByID(ID int) (*Account, error)
-	GetAccount() ([]*Account, error)
+	GetAccount() (*[]Account, error)
 }

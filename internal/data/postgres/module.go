@@ -44,17 +44,17 @@ func (s *PostgresStore) createAccountTable() error {
 			balance serial,
 			created_at timestamp
 		);`
-	_, err := s.db.Query(query)
+	_, err := s.db.Exec(query)
 	return err
 }
 
-func (s PostgresStore) CreateAccount(*data.Account) error {
+func (s PostgresStore) CreateAccount(acc *data.Account) error {
 	query := `
 		insert into account (first_name,last_name, number, balance, created_at) 
 		values($1,$2,$3,$4,$5)
 	`
 
-	_, err := s.db.Exec(query)
+	_, err := s.db.Exec(query, acc.FirstName, acc.LastName, acc.Number, acc.Balance, acc.CreatedAt)
 	if err != nil {
 		return err
 	}
@@ -96,6 +96,8 @@ func (s PostgresStore) GetAccountByID(ID int) (*data.Account, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	rows.Next()
 	resp, err := s.fromRowsToAccount(rows)
 	if err != nil {
 		return nil, err
@@ -134,7 +136,6 @@ func (s PostgresStore) fromRowsToAccount(rows *sql.Rows) (data.Account, error) {
 		&acc.ID,
 		&acc.FirstName,
 		&acc.LastName,
-		&acc.Number,
 		&acc.Number,
 		&acc.Balance,
 		&acc.CreatedAt,
